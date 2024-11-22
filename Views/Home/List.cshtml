@@ -1,0 +1,162 @@
+﻿@model IEnumerable<Test66bit.Models.Footballer>
+
+@{
+    ViewData["Title"] = "Список футболистов";
+}
+
+<h1>Список футболистов</h1>
+
+<p>
+    <a class="btn btn-outline-success" asp-action="Index">Добавить+</a>
+</p>
+@if (ViewBag.Error != null)
+{
+    <div class="alert alert-danger" role="alert">
+        @ViewBag.Error
+    </div>
+}
+<table class="table">
+    <thead>
+        <tr>
+            <th>@Html.DisplayNameFor(model => model.Id)</th>
+            <th>Имя</th>
+            <th>Фамилия</th>
+            <th>Пол</th>
+            <th>Дата рождения</th>
+            <th>Название команды</th>
+            <th>Страна</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@Html.DisplayFor(modelItem => item.Id)</td>
+                <td>@Html.DisplayFor(modelItem => item.FirstName)</td>
+                <td>@Html.DisplayFor(modelItem => item.LastName)</td>
+                <td>@Html.DisplayFor(modelItem => item.Gender)</td>
+                <td>@item.DateOfBirth.ToString("dd.MM.yyyy")</td>
+                <td>@Html.DisplayFor(modelItem => item.Team.Name)</td>
+                <td>@Html.DisplayFor(modelItem => item.Country)</td>
+                <td>
+                    <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editModal"
+                            data-id="@item.Id" data-firstname="@item.FirstName" data-lastname="@item.LastName"
+                            data-gender="@item.Gender" data-dateofbirth="@item.DateOfBirth.ToString("yyyy-MM-dd")"
+                            data-team="@item.Team.Name" data-country="@item.Country">
+                        <i class="bi bi-pencil-square"></i>
+                    </button>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<!-- Модальное окно для редактирования -->
+<div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editModalLabel">Редактировать футболиста</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editForm" asp-action="Edit" method="post">
+                    <input type="hidden" id="FootballerId" name="Id" />
+                    <div class="form-group">
+                        <label for="FirstName">Имя</label>
+                        <input type="text" class="form-control" id="FirstName" name="FirstName" />
+                    </div>
+                    <div class="form-group">
+                        <label for="LastName">Фамилия</label>
+                        <input type="text" class="form-control" id="LastName" name="LastName" />
+                    </div>
+                    <div class="form-group">
+                        <label for="Gender">Пол</label>
+                        <div id="Gender" class="form-check">
+                            @foreach (var gender in Enum.GetValues(typeof(Test66bit.Enums.Gender)).Cast<Test66bit.Enums.Gender>())
+                            {
+                                <div class="form-check">
+                                    <input type="radio" class="form-check-input" id="@gender" name="Gender" value="@gender" />
+                                    <label class="form-check-label" for="@gender">@gender</label>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="DateOfBirth">Дата рождения</label>
+                        <input type="date" class="form-control" id="DateOfBirth" name="DateOfBirth" />
+                    </div>
+                    <div class="form-group">
+                        <label>Название команды</label>
+                        <select class="form-select" id="TeamName" name="TeamName">
+                            @foreach (var team in ViewBag.Teams)
+                            {
+                                <option value="@team.Name">@team.Name</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="Country">Страна</label>
+                        <select id="Country" name="Country" class="form-select">
+                            @foreach (var country in Enum.GetValues(typeof(Test66bit.Enums.Country)).Cast<Test66bit.Enums.Country>())
+                            {
+                                <option value="@country">@country</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+                        <button type="submit" class="btn btn-primary">Сохранить изменения</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/lib/microsoft-signalr/signalr.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const hubConnection = new signalR.HubConnectionBuilder()
+                .withUrl("/Test66bitHub")
+                .build();
+
+            hubConnection.on("newFootballer", function (footballer) {
+                console.log('Привет, мир!');
+                const tableBody = document.querySelector("table tbody");
+                const newRow = document.createElement("tr");
+
+                newRow.innerHTML = `
+                    <td>${footballer.id}</td>
+                    <td>${footballer.firstName}</td>
+                    <td>${footballer.lastName}</td>
+                    <td>${footballer.gender}</td>
+                    <td>${new Date(footballer.dateOfBirth).toLocaleDateString("ru-RU")}</td>
+                    <td>${footballer.team.name}</td>
+                    <td>${footballer.country}</td>
+                    <td>
+                        <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editModal"
+                                data-id="${footballer.id}" data-firstname="${footballer.firstName}" data-lastname="${footballer.lastName}"
+                                data-gender="${footballer.gender}" data-dateofbirth="${new Date(footballer.dateOfBirth).toISOString().split('T')[0]}"
+                                data-team="${footballer.team.name}" data-country="${footballer.country}">
+                            <i class="bi bi-pencil-square"></i>
+                        </button>
+                    </td>
+                `;
+
+                tableBody.appendChild(newRow);
+            });
+
+            hubConnection.start()
+                .then(() => console.log('SignalR Connected'))
+                .catch(err => console.error('SignalR Connection Error: ', err));
+
+            hubConnection.onclose((error) => {
+                console.error("SignalR connection closed with error:", error);
+            });
+        });
+
+    </script>
+}

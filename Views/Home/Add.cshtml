@@ -1,0 +1,88 @@
+﻿@model Test66bit.ViewModels.FootballerAdd 
+
+@{
+    ViewData["Title"] = "Добавить";
+}
+
+<h1>Добавление футболиста</h1>
+
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="Add">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            @if (ViewBag.Error != null)
+            {
+                <div class="alert alert-danger" role="alert">
+                    @ViewBag.Error
+                </div>
+            }
+            <div class="form-group">
+                <label asp-for="FirstName" class="control-label">Имя</label>
+                <input asp-for="FirstName" class="form-control" />
+                <span asp-validation-for="FirstName" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="LastName" class="control-label">Фамилия</label>
+                <input asp-for="LastName" class="form-control" />
+                <span asp-validation-for="LastName" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label class="control-label">Пол</label>
+                <div>
+                    @foreach (var gender in Enum.GetValues(typeof(Test66bit.Enums.Gender)).Cast<Test66bit.Enums.Gender>())
+                    {
+                            <div class="form-check">
+                                <input asp-for="Gender" class="form-check-input" type="radio" value="@gender" id="@gender.ToString()" />
+                                <label class="form-check-label" for="@gender.ToString()">
+                                @gender.ToString()
+                                </label>
+                            </div>
+                    }
+                </div>
+                <span asp-validation-for="Gender" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="DateOfBirth" class="control-label">Дата рождения</label>
+                <input asp-for="DateOfBirth" class="form-control" />
+                <span asp-validation-for="DateOfBirth" class="text-danger"></span>
+            </div>
+            <div class="form-group mt-2 mb-2">
+                <label>Название команды</label>
+                <select asp-for="TeamName" onchange="toggleNewTeamInput(this.value)">
+                    <option selected="selected"></option>
+                    @foreach (var team in ViewBag.Teams)
+                    {
+                        <option value="@team.Name">@team.Name</option>
+                    }
+                    <option value="NewTeam">Добавить новую команду</option>
+                </select>
+                <input type="text" asp-for="NewTeamName" class="form-control mt-2" id="newTeamName" placeholder="Введите название новой команды" style="display: @(ViewBag.IsNewTeamSelected == null ? "none" : "block")" />
+                <span asp-validation-for="NewTeamName" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Country" class="control-label">Страна</label>
+                <select asp-for="Country" class="form-select" asp-items="Html.GetEnumSelectList<Test66bit.Enums.Country>()">
+                    <option value="">-- Выберите страну --</option>
+                </select>
+                <span asp-validation-for="Country" class="text-danger"></span>
+            </div>
+            <div class="form-group mt-2 mb-2">
+                <input type="submit" value="Добавить" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function toggleNewTeamInput(selectedValue) {
+            const newTeamInput = document.getElementById("newTeamName");
+            newTeamInput.style.display = selectedValue === "NewTeam" ? "block" : "none";
+            newTeamInput.value = ""; // Clear input if not visible
+        }
+    </script>
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}
