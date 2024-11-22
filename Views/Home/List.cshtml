@@ -124,7 +124,6 @@
                 .build();
 
             hubConnection.on("newFootballer", function (footballer) {
-                console.log('Привет, мир!');
                 const tableBody = document.querySelector("table tbody");
                 const newRow = document.createElement("tr");
 
@@ -155,6 +154,25 @@
 
             hubConnection.onclose((error) => {
                 console.error("SignalR connection closed with error:", error);
+            });
+
+            $('#editModal').on('show.bs.modal', function (event) {
+                var button = $(event.relatedTarget);
+                var id = button.data('id');
+                var firstName = button.data('firstname');
+                var lastName = button.data('lastname');
+                var gender = button.data('gender');
+                var dateOfBirth = button.data('dateofbirth');
+                var team = button.data('team');
+                var country = button.data('country');
+
+                $('#FootballerId').val(id);
+                $('#FirstName').val(firstName);
+                $('#LastName').val(lastName);
+                $('#Gender input[value="' + gender + '"]').prop('checked', true);
+                $('#DateOfBirth').val(dateOfBirth);
+                $('#TeamName').val(team);
+                $('#Country').val(country);
             });
         });
 
